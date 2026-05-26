@@ -6,17 +6,24 @@ on:
 
 jobs:
   docker:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t hello-world-nginx:v1 .
+      - name: Build Docker image with branch and SHA tags
+        run: |
+          BRANCH_NAME="${GITHUB_REF_NAME//\//-}"
+          docker build \
+            -t ghcr.io/Kenneth-Pierloz/hello-world-nginx:${BRANCH_NAME} \
+            -t ghcr.io/Kenneth-Pierloz/hello-world-nginx:${GITHUB_SHA} .
+            .
 
       - name: Start Docker container
-        run: docker run -d --name hello-world-nginx -p 8080:80 hello-world-nginx:v1
+        run: |
+          BRANCH_NAME="${GITHUB_REF_NAME//\//-}"
+          docker run -d --name hello-world-nginx -p 8080:80 ghcr.io/Kenneth-Pierloz/hello-world-nginx:${BRANCH_NAME}
 
       - name: Verify container is running
         run: |
